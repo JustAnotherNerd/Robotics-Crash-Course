@@ -10,12 +10,11 @@ MPU6050 IMU(4, 5);
 Servo actuator;
 
 // Define global variables for Sensor and PID
-#define SERVO_PIN 9
 #define TRIG_PIN 10
 #define ECHO_PIN 2
 #define ECHO_INT 0
-#define CENTER 90
-#define DESIRED_DISTANCE 30
+#define DESIRED_DISTANCE 20
+#define WAIT 100
 
 int distance;
 int left_distance, right_distance;
@@ -56,13 +55,16 @@ void setup() {
 }
 void loop(){
   // Find distance to object in front
+  delay(50);
   if(dist_sensor.isFinished()) {
     distance = dist_sensor.getRange();
     dist_sensor.start();
   }
+  Serial.print("Distance: ");
+  Serial.println(distance);
 
   // Continue driving if far enough away (>20 cm away)
-  if(distance > 20){
+  if(distance > DESIRED_DISTANCE){
     drive();
   }
 
@@ -70,33 +72,38 @@ void loop(){
   else{
     // Turn sensor to left, check left distance
     actuator.write(180);
+    delay(WAIT);
     if(dist_sensor.isFinished()) {
       left_distance = dist_sensor.getRange();
       dist_sensor.start();
     }
+    Serial.print("Left Distance: ");
+    Serial.println(left_distance);
     // Turn sensor to right, wait for sensor, then check right distance
     actuator.write(0);
-    delay(50);
+    delay(2 * WAIT);
     if(dist_sensor.isFinished()) {
       right_distance = dist_sensor.getRange();
       dist_sensor.start();
     }
+    Serial.print("Right Distance: ");
+    Serial.println(right_distance);
+    actuator.write(90);
+    delay(WAIT);
     // Compare distances, and turn towards the direction with greatest distance [default to right]
     if(left_distance > right_distance){
-      
+      raw_motor_control(255, -255);
     }
     else{
-      
+      raw_motor_control(-255, 255);
     }
+    delay(WAIT);
   }
 }
 
 void drive() {
   IMU.update();
-  
-  Serial.print("Ang. Vel. z: ");
   input = IMU.get_ang_vel('z');
-  Serial.println(input);
 
   controller.Compute();
   Serial.print("Output: ");
