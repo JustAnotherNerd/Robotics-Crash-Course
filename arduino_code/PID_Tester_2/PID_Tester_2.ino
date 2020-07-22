@@ -5,6 +5,7 @@
 
 MPU6050 IMU(4, 5);
 Servo actuator;
+
 double set_ang_vel = 0;
 double input;
 double output;
@@ -13,7 +14,6 @@ double ki = 0.15;
 double kd = 0.01;
 
 PID controller(&input, &output, &set_ang_vel, kp, ki, kd, REVERSE);
-State controller_state();
 
 void setup() {
   // Initialize the components (Motors, servo, sensor, controller) and states
@@ -25,8 +25,8 @@ void setup() {
   IMU.initialize();
   IMU.calibrate();
 
-  controller_state.setLinearState(150);
-  controller_state.setRotationState(0);
+  // controller_state.setLinearState(150);
+  // controller_state.setRotationState(0);
 
   controller.SetOutputLimits(-105, 105);
   controller.SetSampleTime(25);
