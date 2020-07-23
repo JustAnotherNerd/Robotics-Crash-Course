@@ -13,8 +13,9 @@ Servo actuator;
 #define TRIG_PIN 10
 #define ECHO_PIN 2
 #define ECHO_INT 0
-#define DESIRED_DISTANCE 20
+#define DESIRED_DISTANCE 40
 #define WAIT 100
+#define ANGLE 45
 
 int distance;
 int left_distance, right_distance;
@@ -42,7 +43,7 @@ void setup() {
   IMU.calibrate();
 
   // Initialize PID object
-  controller.SetOutputLimits(-105, 105);
+  controller.SetOutputLimits(-135, 135);
   controller.SetSampleTime(25);
   controller.SetMode(1);
 
@@ -71,7 +72,7 @@ void loop(){
   // Check distances to left and right
   else{
     // Turn sensor to left, check left distance
-    actuator.write(180);
+    actuator.write(90 + ANGLE);
     delay(WAIT);
     if(dist_sensor.isFinished()) {
       left_distance = dist_sensor.getRange();
@@ -80,7 +81,7 @@ void loop(){
     Serial.print("Left Distance: ");
     Serial.println(left_distance);
     // Turn sensor to right, wait for sensor, then check right distance
-    actuator.write(0);
+    actuator.write(90 - ANGLE);
     delay(2 * WAIT);
     if(dist_sensor.isFinished()) {
       right_distance = dist_sensor.getRange();
@@ -92,12 +93,12 @@ void loop(){
     delay(WAIT);
     // Compare distances, and turn towards the direction with greatest distance [default to right]
     if(left_distance > right_distance){
-      raw_motor_control(255, -255);
+      diff_left(180);
     }
     else{
-      raw_motor_control(-255, 255);
+      diff_right(180);
     }
-    delay(WAIT);
+    delay(4*WAIT);
   }
 }
 
@@ -109,5 +110,5 @@ void drive() {
   Serial.print("Output: ");
   Serial.println(output);
 
-  raw_motor_control(150 + output, 150 - output);
+  raw_motor_control(120 + output, 120 - output);
 }
